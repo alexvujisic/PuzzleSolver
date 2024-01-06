@@ -115,13 +115,13 @@ public class Puzzle {
     }
 
 
-    //funktioniert noch nicht ganz
+
     public void setManhattanDistance(){
         int distance = 0;
         for (int i = 0; i < this.puzzle.length; i++) {
             if (this.puzzle[i] != 0) {
-                int targetRow = this.puzzle[i] / 3;
-                int targetCol = this.puzzle[i] % 3;
+                int targetRow = (this.puzzle[i] - 1) / 3;
+                int targetCol = (this.puzzle[i] - 1) % 3;
                 int currentRow = i / 3;
                 int currentCol = i % 3;
                 distance += Math.abs(targetRow - currentRow) + Math.abs(targetCol - currentCol);
