@@ -7,10 +7,12 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Type in 1: Right 2: Down 3: Left 4: Up");
         Scanner scan = new Scanner(System.in);
-        int[] puzzle2 = {1, 0, 3, 4, 2, 6, 7, 5, 8};
+        int[] puzzle2 = {1, 2, 3, 4, 5, 6, 8, 7, 0};
         Puzzle puzzle = new Puzzle(puzzle2);
         Puzzle.printPuzzle(puzzle.getPuzzle());
 
+
+        System.out.println("is solvable: " + puzzle.isSolvable());
         while(!Puzzle.isSolved(puzzle.getPuzzle())){
             puzzle.setMisplaced();
             puzzle.setManhattanDistance();
@@ -25,6 +27,8 @@ public class Main {
         System.out.println("Misplaced: " + puzzle.getMisplaced() + "Manhattan: " + puzzle.getManhattanDistance());
         System.out.println("good job");
         Puzzle.printPuzzle(puzzle.getPuzzle());
+
+
     }
 }
 
