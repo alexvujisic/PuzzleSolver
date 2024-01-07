@@ -1,10 +1,11 @@
-import java.util.Arrays;
+import javax.naming.InitialContext;
+import java.util.*;
 
 public class Puzzle {
     private int[] puzzle;
     private int misplaced;
     private int manhattanDistance;
-    private boolean solvable;
+
 
     public int[] getPuzzle() {
         return puzzle;
@@ -37,12 +38,9 @@ public class Puzzle {
     }
 
     //checks if the puzzle is solved
-    public static boolean isSolved(int[] puzzle) {
+    public boolean isSolved() {
         int[] solvedPuzzle = {1, 2, 3, 4, 5, 6, 7, 8, 0};
-        if (Arrays.equals(puzzle, solvedPuzzle)) {
-            return true;
-        }
-        return false;
+        return Arrays.equals(this.puzzle, solvedPuzzle);
     }
 
     //function to move tiles
@@ -78,22 +76,17 @@ public class Puzzle {
         int row = blankPosition / 3;
         int col = blankPosition % 3;
         //direction: 1 -> right, 2 -> down, 3 -> left, 4 -> up
-        switch (direction) {
-            case 1:
-                return col < 2; // Check if it's not on the right edge
-            case 2:
-                return row < 2; // Check if it's not on the bottom edge
-            case 3:
-                return col > 0; // Check if it's not on the left edge
-            case 4:
-                return row > 0; // Check if it's not on the top edge
-            default:
-                return false;
-        }
+        return switch (direction) {
+            case 1 -> col < 2; // Check if it's not on the right edge
+            case 2 -> row < 2; // Check if it's not on the bottom edge
+            case 3 -> col > 0; // Check if it's not on the left edge
+            case 4 -> row > 0; // Check if it's not on the top edge
+            default -> false;
+        };
     }
 
     //function to switch positions in array to move tiles
-    private void switchPuzzlePosition(/*int[] puzzle,*/ int from, int to) {
+    private void switchPuzzlePosition(int from, int to) {
         int temp = this.puzzle[from];
         this.puzzle[from] = this.puzzle[to];
         this.puzzle[to] = temp;
@@ -150,5 +143,61 @@ public class Puzzle {
             }
         }
         return inversions;
+    }
+
+    public static int solveAStar(Puzzle puzzle, String heuristic){
+        PriorityQueue<AStarNode> openSet = new PriorityQueue<>(Comparator.comparingInt(AStarNode::getF));
+        Set<Puzzle> closedSet = new HashSet<>();
+
+        AStarNode initalAStarNode = new AStarNode(puzzle);
+        initalAStarNode.setG(0);
+        // H -> Hamming , M -> Manhattan
+        if(heuristic.equals("H")){
+            initalAStarNode.setHeuristic(puzzle.getMisplaced());
+        }else if(heuristic.equals("M")){
+            initalAStarNode.setHeuristic(puzzle.getManhattanDistance());
+        }
+        initalAStarNode.setF();
+
+        openSet.add(initalAStarNode);
+
+        while(!openSet.isEmpty()){
+            AStarNode current = openSet.poll();
+
+            if(current.getPuzzle().isSolved()){
+                System.out.println("Puzzle solved with A*");
+                Puzzle.printPuzzle(current.getPuzzle().getPuzzle());
+                System.out.println("\nNodes: " + current.getG());
+                return current.getF();
+            }
+
+            closedSet.add(current.getPuzzle());
+
+            for (int direction = 1; direction <= 4; direction++) {
+                if (Puzzle.isValidMove(Puzzle.getBlankPosition(current.getPuzzle().getPuzzle()), direction)) {
+                    Puzzle successorPuzzle = new Puzzle(Arrays.copyOf(current.getPuzzle().getPuzzle(), current.getPuzzle().getPuzzle().length));
+                    successorPuzzle.makeMove(direction);
+
+                    if (!closedSet.contains(successorPuzzle)) {
+                        AStarNode successorNode = new AStarNode(successorPuzzle);
+                        int g = current.getG() + 1;
+                        successorNode.setG(g);
+                        if (heuristic.equals("H")) {
+                            successorNode.setHeuristic(successorPuzzle.getMisplaced());
+                        } else if (heuristic.equals("M")) {
+                            successorNode.setHeuristic(successorPuzzle.getManhattanDistance());
+                        }
+                        successorNode.setF();
+
+                        if (!openSet.contains(successorNode) || g < successorNode.getG()) {
+                            openSet.add(successorNode);
+                        }
+                    }
+
+                }
+                System.out.println("Heuristic value" + current.getF());
+            }
+        }
+        return 0;
     }
 }
