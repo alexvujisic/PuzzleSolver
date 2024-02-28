@@ -48,9 +48,10 @@ public class PuzzleStatistics {
         this.computationTimeMillis += computationTimeMillis;
     }
 
-    public void printStatistics(){
+    public void printStatistics(int numberOfPuzzles){
         String output = "Heuristic: " + this.heuristic + "\nTotal Number of expanded Nodes: " + this.totalExpandedNodes
                         + "\nTotal Depth: " + this.depth + "\nTotal Computation Time (in ms): " + this.computationTimeMillis + "ms";
+        output += "\nAverage Number of expanded Nodes: " + (this.totalExpandedNodes/numberOfPuzzles) + "\nAverage Depth: " + (this.depth/numberOfPuzzles) + "\nAverage Computation Time (in ms): " + (this.computationTimeMillis/numberOfPuzzles) + "ms";
         System.out.println(output);
     }
 }

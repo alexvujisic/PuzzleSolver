@@ -8,7 +8,10 @@ public class Main {
 
         PuzzleStatistics hammingStatistics = new PuzzleStatistics("H");
         PuzzleStatistics manhattanStatistics = new PuzzleStatistics("M");
-        for(int i = 0; i < 4; i++){
+
+        int numberOfPuzzles = 4;
+
+        for(int i = 0; i < numberOfPuzzles; i++){
             Puzzle puzzle = new Puzzle();
             puzzle.printPuzzle();
 
@@ -20,8 +23,9 @@ public class Main {
             PuzzleStatistics manhattanIteration = puzzle.solvePuzzle("M");
             manhattanStatistics.addToStatistic(manhattanIteration.getTotalExpandedNodes(), manhattanIteration.getDepth(), manhattanIteration.getComputationTimeMillis());
         }
-        manhattanStatistics.printStatistics();
+        System.out.println("Total Number of Puzzles solved: " + numberOfPuzzles + "\n");
+        manhattanStatistics.printStatistics(numberOfPuzzles);
         System.out.println("\n");
-        hammingStatistics.printStatistics();
+        hammingStatistics.printStatistics(numberOfPuzzles);
     }
 }
