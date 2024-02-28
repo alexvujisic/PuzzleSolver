@@ -3,21 +3,25 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        Puzzle puzzle = new Puzzle();
+        //Puzzle puzzle = new Puzzle(new int[]{1, 2, 3, 4, 6, 0, 7, 5, 8}, 0);
+        //Puzzle puzzle = new Puzzle(new int[]{5, 2, 0, 4, 6, 7, 1, 8, 3}, 0);
 
-        int nodesManhattan = 0;
-        int nodesHumming = 0;
+        PuzzleStatistics hammingStatistics = new PuzzleStatistics("H");
+        PuzzleStatistics manhattanStatistics = new PuzzleStatistics("M");
+        for(int i = 0; i < 4; i++){
+            Puzzle puzzle = new Puzzle();
+            puzzle.printPuzzle();
 
+            // Solving with Hamming
+            PuzzleStatistics hammingIteration = puzzle.solvePuzzle("H");
+            hammingStatistics.addToStatistic(hammingIteration.getTotalExpandedNodes(), hammingIteration.getDepth(), hammingIteration.getComputationTimeMillis());
 
-
-
-
-            if(puzzle.isSolvable()) {
-                puzzle.solvePuzzle("M");
-                nodesManhattan += puzzle.getG();
-            }
-
-        System.out.println("Manhattan: \nTotal Nodes in random Puzzles: "+nodesManhattan);
-        System.out.println("Humming: \nTotal Nodes in random Puzzles: "+nodesHumming);
+            // Solving with Manhattan
+            PuzzleStatistics manhattanIteration = puzzle.solvePuzzle("M");
+            manhattanStatistics.addToStatistic(manhattanIteration.getTotalExpandedNodes(), manhattanIteration.getDepth(), manhattanIteration.getComputationTimeMillis());
+        }
+        manhattanStatistics.printStatistics();
+        System.out.println("\n");
+        hammingStatistics.printStatistics();
     }
 }

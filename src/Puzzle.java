@@ -12,16 +12,19 @@ public class Puzzle {
      */
     public Puzzle(){
         int[] solvedPuzzle = {1, 2, 3, 4, 5, 6, 7, 8, 0};
-        int[] randomPattern = Arrays.copyOf(solvedPuzzle, solvedPuzzle.length);
+        int[] randomPattern;
 
-        Random random = new Random();
-        for (int i = 0; i < randomPattern.length; i++) {
-            int index = random.nextInt(i + 1);
-            int temp = randomPattern[i];
-            randomPattern[i] = randomPattern[index];
-            randomPattern[index] = temp;
-        }
-        this.puzzle = randomPattern;
+        do{
+            randomPattern = Arrays.copyOf(solvedPuzzle, solvedPuzzle.length);
+            Random random = new Random();
+            for (int i = 0; i < randomPattern.length; i++) {
+                int index = random.nextInt(i + 1);
+                int temp = randomPattern[i];
+                randomPattern[i] = randomPattern[index];
+                randomPattern[index] = temp;
+            }
+            this.puzzle = randomPattern;
+        }while(!this.isSolvable());
         this.g = 0;
     }
 
@@ -36,27 +39,27 @@ public class Puzzle {
     }
 
     //Returns the position of the blank tile
-    public static int getBlankPosition(int[] puzzle) {
+    public int getBlankPosition() {
         for (int i = 0; i < puzzle.length; i++) {
-            if (0 == puzzle[i]) {
+            if (puzzle[i] == 0) {
                 return i;
             }
         }
-        return 9;
+        return 9; //error
     }
 
     //checks if the next move is valid/possible
-    public static boolean isValidMove(int blankPosition, int direction) {
-        int row = blankPosition / 3;
-        int col = blankPosition % 3;
-        //direction: 1 -> right, 2 -> down, 3 -> left, 4 -> up
-        return switch (direction) {
-            case 1 -> col < 2; // Check if it's not on the right edge
-            case 2 -> row < 2; // Check if it's not on the bottom edge
-            case 3 -> col > 0; // Check if it's not on the left edge
-            case 4 -> row > 0; // Check if it's not on the top edge
-            default -> false;
-        };
+    public boolean isValidMove(int direction) {
+            int row = getBlankPosition() / 3;
+            int col = getBlankPosition() % 3;
+            //direction: 1 -> right, 2 -> down, 3 -> left, 4 -> up
+            return switch (direction) {
+                case 1 -> col < 2; // Check if it's not on the right edge
+                case 2 -> row < 2; // Check if it's not on the bottom edge
+                case 3 -> col > 0; // Check if it's not on the left edge
+                case 4 -> row > 0; // Check if it's not on the top edge
+                default -> false;
+            };
     }
 
     //function to switch positions in array to move tiles
@@ -70,8 +73,8 @@ public class Puzzle {
     public void makeMove(int direction) {
         //direction: 1 -> right, 2 -> down, 3 -> left, 4 -> up
         //how to replace position in array: right -> +1, down -> +3, left -> -1, up -> -3
-        int blankPosition = getBlankPosition(puzzle);
-        if (isValidMove(blankPosition, direction)) {
+        int blankPosition = this.getBlankPosition();
+        if (isValidMove(direction)) {
             switch (direction) {
                 case 1: //right
                     switchPuzzlePosition(blankPosition, blankPosition + 1);
@@ -110,7 +113,10 @@ public class Puzzle {
     }
     public void calculateHamming(){
         int counter = 0;
-        for (int i = 0; i < (this.puzzle.length - 1); i++) {
+        for (int i = 0; i < this.puzzle.length; i++) {
+            if(puzzle[i] == 0){
+                continue;
+            }
             if (puzzle[i] != (i + 1)) {
                 counter++;
             }
@@ -120,7 +126,7 @@ public class Puzzle {
 
     //function that checks for solvability returns true if solvable and false if not
     public boolean isSolvable() {
-        int inversionCount = countInversions(puzzle);
+        int inversionCount = countInversions(this.puzzle);
         return inversionCount % 2 == 0;
     }
     //https://www.geeksforgeeks.org/check-instance-8-puzzle-solvable/
@@ -148,12 +154,18 @@ public class Puzzle {
      * @param heuristicFunction The heuristic function to be used
      * @return the g value of the solution
      */
-    public int solvePuzzle(String heuristicFunction){
+
+    public PuzzleStatistics solvePuzzle(String heuristicFunction){
+
+        long computationTime;
+        long beginTime = System.currentTimeMillis();
 
         //In here the puzzles and their successor are stored in order of the f function
         PriorityQueue<Puzzle> openSet = new PriorityQueue<>(Comparator.comparingInt(Puzzle::getF));
         //All the nodes that were already visited
         Set<Puzzle> closedSet = new HashSet<>();
+
+        int expandedNodes = 0;
 
         // H -> Hamming , M -> Manhattan
         if(heuristicFunction.equals("H")){
@@ -169,12 +181,16 @@ public class Puzzle {
             Puzzle current = openSet.poll();
 
             if (current.isSolved()) {
-                return current.getG();
+                //if puzzle is solved
+                long endTime = System.currentTimeMillis();
+                computationTime = endTime - beginTime;
+                return new PuzzleStatistics(expandedNodes, current.getG(), heuristicFunction, computationTime);
             }
 
             closedSet.add(current);
 
             ArrayList<Puzzle> successorsList = Puzzle.getSuccessors(current, heuristicFunction);
+            expandedNodes++;
 
             for (Puzzle successor : successorsList) {
                 if (!isPuzzleInSet(openSet, closedSet, successor)) {
@@ -184,7 +200,7 @@ public class Puzzle {
 
         }
 
-        return 0;
+        return null;
     }
 
     public boolean isPuzzleInSet(PriorityQueue<Puzzle> openSet, Set<Puzzle> closedSet, Puzzle toCompare){
@@ -200,12 +216,14 @@ public class Puzzle {
         }
         return false;
     }
-    public static ArrayList<Puzzle> getSuccessors(Puzzle node, String heuristicFunction){
+
+
+    public static ArrayList<Puzzle> getSuccessors(Puzzle parentNode, String heuristicFunction){
         ArrayList<Puzzle> successors = new ArrayList<Puzzle>();
 
         for (int direction = 1; direction <= 4; direction++) {
-            if (node.isValidMove(node.getBlankPosition(node.getPuzzle()), direction)) {
-                Puzzle successorPuzzle = new Puzzle(Arrays.copyOf(node.getPuzzle(), node.getPuzzle().length), node.getG()+1);
+            if (parentNode.isValidMove(direction)) {
+                Puzzle successorPuzzle = new Puzzle(Arrays.copyOf(parentNode.getPuzzle(), parentNode.getPuzzle().length), parentNode.getG()+1);
                 successorPuzzle.makeMove(direction);
                 if(heuristicFunction.equals("H")){
                     successorPuzzle.calculateHamming();
@@ -247,7 +265,7 @@ public class Puzzle {
         return Arrays.equals(this.puzzle, solvedPuzzle);
     }
 
-    public static void printPuzzle(int[] puzzle) {
+    public void printPuzzle() {
         System.out.println("| " + puzzle[0] + " | " + puzzle[1] + " | " + puzzle[2] + " |\n" +
                 "| " + puzzle[3] + " | " + puzzle[4] + " | " + puzzle[5] + " |\n" +
                 "| " + puzzle[6] + " | " + puzzle[7] + " | " + puzzle[8] + " |\n");
