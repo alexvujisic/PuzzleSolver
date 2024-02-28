@@ -9,11 +9,12 @@ public class Main {
         PuzzleStatistics hammingStatistics = new PuzzleStatistics("H");
         PuzzleStatistics manhattanStatistics = new PuzzleStatistics("M");
 
-        int numberOfPuzzles = 4;
+        int numberOfPuzzles = 100;
 
         for(int i = 0; i < numberOfPuzzles; i++){
             Puzzle puzzle = new Puzzle();
-            puzzle.printPuzzle();
+            //puzzle.printPuzzle();
+            System.out.println(i);
 
             // Solving with Hamming
             PuzzleStatistics hammingIteration = puzzle.solvePuzzle("H");
