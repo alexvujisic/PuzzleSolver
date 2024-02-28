@@ -13,8 +13,8 @@ public class Main {
 
         for(int i = 0; i < numberOfPuzzles; i++){
             Puzzle puzzle = new Puzzle();
-            //puzzle.printPuzzle();
-            System.out.println(i);
+            System.out.println("Puzzle " + (i+1));
+            puzzle.printPuzzle();
 
             // Solving with Hamming
             PuzzleStatistics hammingIteration = puzzle.solvePuzzle("H");
